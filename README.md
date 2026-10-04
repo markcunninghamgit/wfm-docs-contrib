@@ -46,9 +46,10 @@ Output is written to `build/`.
 
 | Command                  | Description                                                                                   |
 | ------------------------ | --------------------------------------------------------------------------------------------- |
-| `yarn start`             | Start the dev server on `localhost:3000` and open browser.                                    |
+| `yarn start [--port <port>]` | Start the dev server on `localhost:3000` by default, or use the specified port.             |
 | `yarn start:wfm`         | Start on `0.0.0.0:3001` with health check and open `docs.warframe.test` (internal devs only). |
 | `yarn start:wfm:no-open` | Same as `start:wfm` without opening the browser.                                              |
+| `yarn docs:version <version>` | Create a versioned snapshot of the current docs for a release.                                |
 | `yarn build`             | Build the static production site.                                                             |
 | `yarn serve`             | Serve the built `build/` output locally.                                                      |
 | `yarn typecheck`         | Run TypeScript checks.                                                                        |
