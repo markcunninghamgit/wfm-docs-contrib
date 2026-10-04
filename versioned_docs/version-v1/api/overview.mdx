@@ -1,0 +1,34 @@
+---
+sidebar_position: 1
+toc_min_heading_level: 2
+toc_max_heading_level: 2
+---
+
+# HTTP API v1 overview
+
+The production base URL is `https://api.warframe.market/v1/`.
+
+V1 sign-in provides account authentication for integrations using the v1 API. Its session token can also be used with authenticated v2 operations such as `GET /v2/me`.
+
+Authentication details are documented on the [Authentication](./authentication) page. The route reference is organized under [Contracts](./contracts) and [Statistics](./statistics).
+
+## Route groups
+
+| Area                | Routes                                                                                                                                                 |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Authentication      | `POST /auth/signin`, `GET /auth/signout`, `POST /auth/registration`                                                                                    |
+| Items               | `GET /items`, `GET /items/{url_name}`, `GET /items/{url_name}/dropsources`                                                                             |
+| Item orders         | `GET /items/{url_name}/orders`, `GET /most_recent`                                                                                                     |
+| Messaging           | `GET /im/chats`, `GET /im/chats?include=chats`, `GET /im/chats/{chat_id}`, `GET /im/ignore`, `DELETE /im/chats/{chat_id}`                              |
+| Profiles            | `GET /profile`, `GET /profile/{user_name}`, `GET /profile/{user_name}/auctions`, `GET /profile/auctions/bids`, `POST /profile/customization`           |
+| Profile orders      | `GET /profile/orders`, `POST /profile/orders`, `GET /profile/orders/{order_id}`, `PUT /profile/orders/{order_id}`, `DELETE /profile/orders/{order_id}` |
+| Public profile data | `GET /profile/{user_name}/orders`, `GET /profile/{user_name}/achievements`, `GET /profile/{user_name}/reviews/`                                        |
+| Statistics          | `GET /items/{url_name}/statistics`, `GET /profile/{user_name}/statistics`, `GET /statistics`                                                           |
+| Auctions            | `GET /auctions`                                                                                                                                        |
+
+See [Contracts](./contracts) for operation details and [Statistics](./statistics) for response fields.
+
+## Contract coverage
+
+- Request-body schemas are not available for most listed operations.
+- OAuth 2.0 token exchange is not documented here; use the v1 sign-in flow for authentication.
