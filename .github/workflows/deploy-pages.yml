@@ -17,6 +17,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      DOCUSAURUS_URL: https://markcunninghamgit.github.io
+      DOCUSAURUS_BASE_URL: /wfm-docs-contrib/
     steps:
       - uses: actions/checkout@v4
         with:
