@@ -14,7 +14,7 @@ The current API and WebSocket contracts are still below `1.0`. Expect changes, i
 
 New API endpoints are added gradually. Some areas are already documented, while others may still be missing or incomplete.
 
-The legacy v1 API is deprecated and unsupported. We do not plan to publish new v1 documentation.
+The v1 reference covers account authentication, HTTP contracts, and statistics during the transition to v2. A v1-issued bearer token has been verified with the authenticated v2 `GET /v2/me` endpoint. See the [v1 documentation](/docs/v1/intro).
 
 ## OAuth 2.0 Status
 

@@ -1,0 +1,10 @@
+{
+  "docsSidebar": [
+    "intro",
+    {
+      "type": "category",
+      "label": "HTTP API v1",
+      "items": ["api/overview", "api/authentication", "api/contracts", "api/statistics"]
+    }
+  ]
+}

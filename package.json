@@ -11,6 +11,7 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"**/*.{ts,tsx,js,css,json,md,mdx}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,css,json,md,mdx}\"",
+    "docs:version": "docusaurus docs:version",
     "build": "docusaurus build",
     "clear": "docusaurus clear",
     "serve": "docusaurus serve --host 0.0.0.0 --port 3001",
@@ -20,6 +21,7 @@
   "dependencies": {
     "@docusaurus/core": "3.10.1",
     "@docusaurus/faster": "3.10.1",
+    "@docusaurus/plugin-client-redirects": "3.10.1",
     "@docusaurus/preset-classic": "3.10.1",
     "@easyops-cn/docusaurus-search-local": "^0.55.2",
     "@mdx-js/react": "^3.0.0",
