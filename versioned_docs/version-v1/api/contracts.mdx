@@ -1,0 +1,926 @@
+---
+sidebar_position: 3
+toc_min_heading_level: 2
+toc_max_heading_level: 2
+---
+
+import ApiEndpoint, { ApiBadge, ApiCallout } from '@site/src/components/ApiEndpoint';
+
+# Contracts
+
+These endpoint specifications use the v1 base URL `https://api.warframe.market/v1`. Examples use placeholders for account data, message content, and identifiers.
+
+Authentication routes are documented on [Authentication](./authentication). Statistics routes are documented on [Statistics](./statistics).
+
+## Messaging
+
+### Get chats
+
+<ApiEndpoint
+  method="GET"
+  path="/im/chats"
+  summary="Get chats belonging to the current account."
+  badges={[{ kind: 'auth', icon: '🔒', label: 'Auth required' }]}
+/>
+
+<ApiCallout kind="warning" icon="🔒" title="Requires">
+
+- A signed-in session sent with the `JWT` cookie.
+
+</ApiCallout>
+
+### Request
+
+#### Query Parameters
+
+| Name      | Type                                       | Description                                     |
+| --------- | ------------------------------------------ | ----------------------------------------------- |
+| `include` | <ApiBadge kind="neutral" label="string" /> | Optional. Use `chats` to include chat messages. |
+
+#### Headers
+
+| Name       | Type                                       | Example       |
+| ---------- | ------------------------------------------ | ------------- |
+| `Cookie`   | <ApiBadge kind="auth" label="string" />    | `JWT=<token>` |
+| `Language` | <ApiBadge kind="i18n" label="string" />    | `en`          |
+| `Platform` | <ApiBadge kind="neutral" label="string" /> | `pc`          |
+
+### Response
+
+#### Body
+
+Without `include`, the response contains chat summaries. `messages` may be empty.
+
+```json
+{
+  "payload": {
+    "chats": [
+      {
+        "id": "<chat-id>",
+        "chat_name": "<string>",
+        "last_update": "<date-time>",
+        "unread_count": 0,
+        "chat_with": [
+          {
+            "id": "<user-id>",
+            "slug": "<user-name>",
+            "ingame_name": "<string>",
+            "platform": "pc",
+            "region": "<string>",
+            "locale": "en",
+            "status": "<string>",
+            "last_seen": "<date-time>",
+            "reputation": 0,
+            "crossplay": false,
+            "avatar": null
+          }
+        ],
+        "messages": []
+      }
+    ]
+  }
+}
+```
+
+#### Data Fields
+
+| Field                     | Type                                               | Description                               |
+| ------------------------- | -------------------------------------------------- | ----------------------------------------- |
+| `payload.chats`           | <ApiBadge kind="neutral" label="Chat[]" />         | Chats for the signed-in account.          |
+| `chats[].id`              | <ApiBadge kind="neutral" label="string" />         | Chat identifier.                          |
+| `chats[].chat_name`       | <ApiBadge kind="neutral" label="string" />         | Chat display name.                        |
+| `chats[].last_update`     | <ApiBadge kind="neutral" label="string" />         | Timestamp of the latest chat activity.    |
+| `chats[].unread_count`    | <ApiBadge kind="neutral" label="number" />         | Number of unread messages.                |
+| `chats[].chat_with`       | <ApiBadge kind="neutral" label="User[]" />         | Chat participants.                        |
+| `chats[].messages`        | <ApiBadge kind="neutral" label="Message[]" />      | Messages included for the chat.           |
+| `chat_with[].id`          | <ApiBadge kind="neutral" label="string" />         | Participant identifier.                   |
+| `chat_with[].slug`        | <ApiBadge kind="neutral" label="string" />         | Participant URL name.                     |
+| `chat_with[].ingame_name` | <ApiBadge kind="neutral" label="string" />         | Participant in-game name.                 |
+| `chat_with[].platform`    | <ApiBadge kind="neutral" label="string" />         | Participant platform.                     |
+| `chat_with[].region`      | <ApiBadge kind="neutral" label="string" />         | Participant region.                       |
+| `chat_with[].locale`      | <ApiBadge kind="neutral" label="string" />         | Participant locale.                       |
+| `chat_with[].status`      | <ApiBadge kind="neutral" label="string" />         | Participant status.                       |
+| `chat_with[].last_seen`   | <ApiBadge kind="neutral" label="string" />         | Participant last-seen timestamp.          |
+| `chat_with[].reputation`  | <ApiBadge kind="neutral" label="number" />         | Participant reputation.                   |
+| `chat_with[].crossplay`   | <ApiBadge kind="neutral" label="bool" />           | Whether participant crossplay is enabled. |
+| `chat_with[].avatar`      | <ApiBadge kind="neutral" label="string or null" /> | Participant avatar URL, when present.     |
+
+### Get chats with messages
+
+`GET /im/chats` accepts `include=chats`. In addition to `payload.chats`, the response includes an `include` object with the included chats and unread-message count.
+
+#### Request
+
+```http
+GET /v1/im/chats?include=chats
+Cookie: JWT=<token>
+Accept: application/json
+Language: en
+Platform: pc
+```
+
+#### Response
+
+```json
+{
+  "payload": {
+    "chats": [
+      {
+        "id": "<chat-id>",
+        "chat_name": "<string>",
+        "last_update": "<date-time>",
+        "unread_count": 0,
+        "chat_with": [],
+        "messages": [
+          {
+            "id": "<message-id>",
+            "chat_id": "<chat-id>",
+            "message_from": "<user-id>",
+            "send_date": "<date-time>",
+            "message": "<message text>",
+            "raw_message": "<raw message text>"
+          }
+        ]
+      }
+    ]
+  },
+  "include": {
+    "chats": [],
+    "unread_messages": 0
+  }
+}
+```
+
+The `include.chats` entries have the same shape as `payload.chats`. Message text is user-generated content.
+
+### Get chat messages
+
+<ApiEndpoint
+  method="GET"
+  path="/im/chats/{chat_id}"
+  summary="Get messages for a chat."
+  badges={[{ kind: 'auth', icon: '🔒', label: 'Auth required' }]}
+/>
+
+<ApiCallout kind="warning" icon="🔒" title="Requires">
+
+- A signed-in session sent with the `JWT` cookie.
+
+</ApiCallout>
+
+### Request
+
+#### URL Parameters
+
+| Name      | Type                                       | Description      |
+| --------- | ------------------------------------------ | ---------------- |
+| `chat_id` | <ApiBadge kind="neutral" label="string" /> | Chat identifier. |
+
+#### Headers
+
+| Name     | Type                                    | Example       |
+| -------- | --------------------------------------- | ------------- |
+| `Cookie` | <ApiBadge kind="auth" label="string" /> | `JWT=<token>` |
+
+### Response
+
+#### Body
+
+```json
+{
+  "payload": {
+    "messages": [
+      {
+        "id": "<message-id>",
+        "chat_id": "<chat-id>",
+        "message_from": "<user-id>",
+        "send_date": "<date-time>",
+        "message": "<message text>",
+        "raw_message": "<raw message text>"
+      }
+    ]
+  }
+}
+```
+
+#### Data Fields
+
+| Field                     | Type                                          | Description                     |
+| ------------------------- | --------------------------------------------- | ------------------------------- |
+| `payload.messages`        | <ApiBadge kind="neutral" label="Message[]" /> | Messages in the requested chat. |
+| `messages[].id`           | <ApiBadge kind="neutral" label="string" />    | Message identifier.             |
+| `messages[].chat_id`      | <ApiBadge kind="neutral" label="string" />    | Parent chat identifier.         |
+| `messages[].message_from` | <ApiBadge kind="neutral" label="string" />    | Sender identifier.              |
+| `messages[].send_date`    | <ApiBadge kind="neutral" label="string" />    | Message timestamp.              |
+| `messages[].message`      | <ApiBadge kind="neutral" label="string" />    | Rendered message text.          |
+| `messages[].raw_message`  | <ApiBadge kind="neutral" label="string" />    | Raw message text.               |
+
+Chat messages can contain private, user-generated content. Do not publish message values in examples or logs.
+
+### Get ignored users
+
+<ApiEndpoint
+  method="GET"
+  path="/im/ignore"
+  summary="Get the current account's ignored-user list."
+  badges={[{ kind: 'auth', icon: '🔒', label: 'Auth required' }]}
+/>
+
+<ApiCallout kind="warning" icon="🔒" title="Requires">
+
+- A signed-in session sent with the `JWT` cookie.
+
+</ApiCallout>
+
+### Request
+
+#### Headers
+
+| Name     | Type                                    | Example       |
+| -------- | --------------------------------------- | ------------- |
+| `Cookie` | <ApiBadge kind="auth" label="string" /> | `JWT=<token>` |
+
+### Response
+
+#### Body
+
+```json
+{
+  "payload": []
+}
+```
+
+`payload` is an array. Its element schema is not specified here.
+
+### Delete a chat
+
+<ApiEndpoint
+  method="DELETE"
+  path="/im/chats/{chat_id}"
+  summary="Delete a chat."
+  badges={[
+    { kind: 'auth', icon: '🔒', label: 'Auth required' },
+    { kind: 'danger', icon: '✕', label: 'Deletes data' },
+  ]}
+/>
+
+<ApiCallout kind="danger" icon="✕" title="Destructive">
+
+This operation deletes chat data. It cannot be undone by this request.
+
+</ApiCallout>
+
+### Request
+
+#### URL Parameters
+
+| Name      | Type                                       | Description      |
+| --------- | ------------------------------------------ | ---------------- |
+| `chat_id` | <ApiBadge kind="neutral" label="string" /> | Chat identifier. |
+
+#### Headers
+
+| Name     | Type                                    | Example       |
+| -------- | --------------------------------------- | ------------- |
+| `Cookie` | <ApiBadge kind="auth" label="string" /> | `JWT=<token>` |
+
+### Response
+
+#### Body
+
+```json
+{
+  "payload": {
+    "chat_id": "<chat-id>"
+  }
+}
+```
+
+## Items and public market data
+
+### List items
+
+<ApiEndpoint method="GET" path="/items" summary="Get item records for lookup." />
+
+### Request
+
+No parameters or request body are required.
+
+### Response
+
+#### Body
+
+```json
+{
+  "payload": {
+    "items": [
+      {
+        "id": "<item-id>",
+        "url_name": "<item-url-name>",
+        "item_name": "<item-name>",
+        "thumb": "<url>"
+      }
+    ]
+  }
+}
+```
+
+#### Data Fields
+
+| Field               | Type                                       | Description          |
+| ------------------- | ------------------------------------------ | -------------------- |
+| `payload.items`     | <ApiBadge kind="neutral" label="Item[]" /> | Item lookup records. |
+| `items[].id`        | <ApiBadge kind="neutral" label="string" /> | Item identifier.     |
+| `items[].url_name`  | <ApiBadge kind="neutral" label="string" /> | Item URL name.       |
+| `items[].item_name` | <ApiBadge kind="neutral" label="string" /> | Display name.        |
+| `items[].thumb`     | <ApiBadge kind="neutral" label="string" /> | Thumbnail URL.       |
+
+### Get an item
+
+<ApiEndpoint method="GET" path="/items/{url_name}" summary="Get item data by URL name." />
+
+### Request
+
+#### URL Parameters
+
+| Name       | Type                                       | Description    |
+| ---------- | ------------------------------------------ | -------------- |
+| `url_name` | <ApiBadge kind="neutral" label="string" /> | Item URL name. |
+
+### Response
+
+#### Body
+
+```ts
+{
+  payload: {
+    items: LongItem[],
+  },
+}
+```
+
+Each item includes `id`, `url_name`, `icon`, `icon_format`, `tags`, and localized fields such as `en`, `fr`, `de`, `ko`, `ru`, `sv`, and `zh`. Localized item fields include `item_name`, `description`, `wiki_link`, and drop information.
+
+### Get item orders
+
+<ApiEndpoint method="GET" path="/items/{url_name}/orders" summary="Get orders for an item." />
+
+### Request
+
+#### URL Parameters
+
+| Name       | Type                                       | Description    |
+| ---------- | ------------------------------------------ | -------------- |
+| `url_name` | <ApiBadge kind="neutral" label="string" /> | Item URL name. |
+
+### Response
+
+#### Body
+
+```ts
+{
+  payload: {
+    orders: Order[],
+  },
+}
+```
+
+An order contains `id`, `creation_date`, `closed_date`, `visible`, `quantity`, `platinum`, `last_update`, `order_type`, `platform`, `region`, and its associated user.
+
+### Get recent orders
+
+<ApiEndpoint method="GET" path="/most_recent" summary="Get recent market orders." />
+
+### Request
+
+No parameters or request body are required.
+
+### Response
+
+#### Body
+
+```ts
+{
+  payload: {
+    orders: Order[],
+  },
+}
+```
+
+### Get auctions
+
+<ApiEndpoint method="GET" path="/auctions" summary="Get current auction records." />
+
+### Request
+
+No parameters or request body are required.
+
+### Response
+
+#### Body
+
+```ts
+{
+  payload: {
+    auctions: Auction[],
+  },
+}
+```
+
+Auction fields include `id`, `created`, `updated`, `closed`, `private`, `buyout_price`, `starting_price`, `top_bid`, `minimal_reputation`, `note`, `note_raw`, `owner`, `winner`, `platform`, `item`, `is_direct_sale`, `is_marked_for`, and `marked_operation_at`.
+
+## Item drop sources
+
+### Get item drop sources
+
+<ApiEndpoint
+  method="GET"
+  path="/items/{url_name}/dropsources"
+  summary="Get drop-source records for an item."
+  badges={[
+    { kind: 'i18n', icon: '🌐', label: 'Language header' },
+    { kind: 'crossplay', icon: '🌀', label: 'Crossplay header' },
+  ]}
+/>
+
+### Request
+
+#### URL Parameters
+
+| Name       | Type                                       | Description    |
+| ---------- | ------------------------------------------ | -------------- |
+| `url_name` | <ApiBadge kind="neutral" label="string" /> | Item URL name. |
+
+#### Headers
+
+| Name        | Type                                       | Example |
+| ----------- | ------------------------------------------ | ------- |
+| `Language`  | <ApiBadge kind="i18n" label="string" />    | `en`    |
+| `Platform`  | <ApiBadge kind="neutral" label="string" /> | `pc`    |
+| `Crossplay` | <ApiBadge kind="crossplay" label="bool" /> | `true`  |
+
+### Response
+
+#### Body
+
+```json
+{
+  "payload": {
+    "dropsources": [
+      {
+        "id": "<drop-source-id>",
+        "type": "<string>",
+        "item": "<string>",
+        "npc": "<string>",
+        "rate": 0,
+        "rarity": "<string>"
+      }
+    ]
+  }
+}
+```
+
+#### Data Fields
+
+| Field                  | Type                                             | Description           |
+| ---------------------- | ------------------------------------------------ | --------------------- |
+| `payload.dropsources`  | <ApiBadge kind="neutral" label="DropSource[]" /> | Drop-source records.  |
+| `dropsources[].id`     | <ApiBadge kind="neutral" label="string" />       | Record identifier.    |
+| `dropsources[].type`   | <ApiBadge kind="neutral" label="string" />       | Drop-source type.     |
+| `dropsources[].item`   | <ApiBadge kind="neutral" label="string" />       | Dropped item name.    |
+| `dropsources[].npc`    | <ApiBadge kind="neutral" label="string" />       | Source NPC or object. |
+| `dropsources[].rate`   | <ApiBadge kind="neutral" label="number" />       | Drop rate.            |
+| `dropsources[].rarity` | <ApiBadge kind="neutral" label="string" />       | Drop rarity.          |
+
+## Profile auctions and reviews
+
+### Get a user's auctions
+
+<ApiEndpoint
+  method="GET"
+  path="/profile/{user_name}/auctions"
+  summary="Get auctions associated with a user."
+/>
+
+### Request
+
+#### URL Parameters
+
+| Name        | Type                                       | Description    |
+| ----------- | ------------------------------------------ | -------------- |
+| `user_name` | <ApiBadge kind="neutral" label="string" /> | User URL name. |
+
+### Response
+
+#### Body
+
+```json
+{
+  "payload": {
+    "auctions": []
+  }
+}
+```
+
+`payload.auctions` is an array of auction records. Fields include `id`, `created`, `updated`, `closed`, `private`, `buyout_price`, `starting_price`, `top_bid`, `minimal_reputation`, `note`, `note_raw`, `owner`, `winner`, `platform`, `item`, `is_direct_sale`, `is_marked_for`, and `marked_operation_at`.
+
+### Get a user's reviews
+
+<ApiEndpoint
+  method="GET"
+  path="/profile/{user_name}/reviews/"
+  summary="Get reviews associated with a user."
+/>
+
+### Request
+
+#### URL Parameters
+
+| Name        | Type                                       | Description    |
+| ----------- | ------------------------------------------ | -------------- |
+| `user_name` | <ApiBadge kind="neutral" label="string" /> | User URL name. |
+
+### Response
+
+#### Body
+
+```json
+{
+  "payload": {
+    "reviews": [
+      {
+        "id": "<review-id>",
+        "date": "<date-time>",
+        "hidden": false,
+        "review_type": 0,
+        "text": "<review text>",
+        "user_from": {
+          "id": "<user-id>",
+          "slug": "<user-name>",
+          "ingame_name": "<string>",
+          "platform": "pc",
+          "region": "<string>",
+          "locale": "en",
+          "crossplay": false,
+          "reputation": 0,
+          "avatar": "<url>",
+          "last_seen": "<date-time>"
+        }
+      }
+    ],
+    "total_review_count": 0,
+    "own_review": null,
+    "user": {}
+  }
+}
+```
+
+#### Data Fields
+
+| Field                        | Type                                               | Description                          |
+| ---------------------------- | -------------------------------------------------- | ------------------------------------ |
+| `payload.reviews`            | <ApiBadge kind="neutral" label="Review[]" />       | Reviews for the requested user.      |
+| `reviews[].id`               | <ApiBadge kind="neutral" label="string" />         | Review identifier.                   |
+| `reviews[].date`             | <ApiBadge kind="neutral" label="string" />         | Review timestamp.                    |
+| `reviews[].hidden`           | <ApiBadge kind="neutral" label="bool" />           | Whether the review is hidden.        |
+| `reviews[].review_type`      | <ApiBadge kind="neutral" label="number" />         | Review type value.                   |
+| `reviews[].text`             | <ApiBadge kind="neutral" label="string" />         | Review text.                         |
+| `reviews[].user_from`        | <ApiBadge kind="neutral" label="User" />           | User who wrote the review.           |
+| `payload.total_review_count` | <ApiBadge kind="neutral" label="number" />         | Total review count.                  |
+| `payload.own_review`         | <ApiBadge kind="neutral" label="Review or null" /> | Current user's review, if present.   |
+| `payload.user`               | <ApiBadge kind="neutral" label="object" />         | Profile associated with the reviews. |
+
+## Profile auction bids
+
+### Get current user's auction bids
+
+<ApiEndpoint
+  method="GET"
+  path="/profile/auctions/bids"
+  summary="Get bids associated with the current account."
+  badges={[{ kind: 'auth', icon: '🔒', label: 'Auth required' }]}
+/>
+
+<ApiCallout kind="warning" icon="🔒" title="Requires">
+
+- A signed-in session sent with the `JWT` cookie.
+
+</ApiCallout>
+
+### Request
+
+#### Headers
+
+| Name     | Type                                    | Example       |
+| -------- | --------------------------------------- | ------------- |
+| `Cookie` | <ApiBadge kind="auth" label="string" /> | `JWT=<token>` |
+
+### Response
+
+#### Body
+
+```json
+{
+  "payload": {
+    "bids": []
+  }
+}
+```
+
+`payload.bids` is an array. Its element schema is not specified here.
+
+## Profiles and account orders
+
+### Get a user's profile
+
+<ApiEndpoint
+  method="GET"
+  path="/profile/{user_name}"
+  summary="Get a user's profile."
+  badges={[{ kind: 'auth', icon: '🔒', label: 'Auth required' }]}
+/>
+
+<ApiCallout kind="warning" icon="🔒" title="Requires">
+
+- Authentication with the `read` scope.
+
+</ApiCallout>
+
+### Request
+
+#### URL Parameters
+
+| Name        | Type                                       | Description    |
+| ----------- | ------------------------------------------ | -------------- |
+| `user_name` | <ApiBadge kind="neutral" label="string" /> | User URL name. |
+
+### Response
+
+#### Body
+
+```ts
+{
+  payload: {
+    profile: User,
+  },
+}
+```
+
+### Get a user's orders
+
+<ApiEndpoint
+  method="GET"
+  path="/profile/{user_name}/orders"
+  summary="Get a user's buy and sell orders."
+/>
+
+### Request
+
+#### URL Parameters
+
+| Name        | Type                                       | Description    |
+| ----------- | ------------------------------------------ | -------------- |
+| `user_name` | <ApiBadge kind="neutral" label="string" /> | User URL name. |
+
+### Response
+
+#### Body
+
+```ts
+{
+  payload: {
+    buy_orders: Order[],
+    sell_orders: Order[],
+  },
+}
+```
+
+### Get a user's achievements
+
+<ApiEndpoint
+  method="GET"
+  path="/profile/{user_name}/achievements"
+  summary="Get a user's achievements."
+/>
+
+### Request
+
+#### URL Parameters
+
+| Name        | Type                                       | Description    |
+| ----------- | ------------------------------------------ | -------------- |
+| `user_name` | <ApiBadge kind="neutral" label="string" /> | User URL name. |
+
+### Response
+
+#### Body
+
+```ts
+{
+  payload: {
+    achievements: Achievement[],
+  },
+}
+```
+
+### Get the authenticated profile
+
+<ApiEndpoint
+  method="GET"
+  path="/profile"
+  summary="Get the authenticated user's profile."
+  badges={[{ kind: 'auth', icon: '🔒', label: 'Auth required' }]}
+/>
+
+<ApiCallout kind="warning" icon="🔒" title="Requires">
+
+- Authentication with the `read` scope.
+
+</ApiCallout>
+
+### Request
+
+No parameters or request body are required.
+
+### Response
+
+#### Body
+
+```ts
+{
+  payload: {
+    profile: User,
+  },
+}
+```
+
+### List current profile orders
+
+<ApiEndpoint
+  method="GET"
+  path="/profile/orders"
+  summary="Get orders belonging to the authenticated user."
+  badges={[{ kind: 'auth', icon: '🔒', label: 'Auth required' }]}
+/>
+
+<ApiCallout kind="warning" icon="🔒" title="Requires">
+
+- Authentication with the `read` scope.
+
+</ApiCallout>
+
+### Request
+
+No parameters or request body are required.
+
+### Response
+
+#### Body
+
+```ts
+{
+  payload: {
+    orders: Order[],
+  },
+}
+```
+
+### Get one current profile order
+
+<ApiEndpoint
+  method="GET"
+  path="/profile/orders/{order_id}"
+  summary="Get one order belonging to the authenticated user."
+  badges={[{ kind: 'auth', icon: '🔒', label: 'Auth required' }]}
+/>
+
+<ApiCallout kind="warning" icon="🔒" title="Requires">
+
+- Authentication with the `read` scope.
+
+</ApiCallout>
+
+### Request
+
+#### URL Parameters
+
+| Name       | Type                                       | Description       |
+| ---------- | ------------------------------------------ | ----------------- |
+| `order_id` | <ApiBadge kind="neutral" label="string" /> | Order identifier. |
+
+### Response
+
+#### Body
+
+```ts
+{
+  payload: {
+    order: Order,
+  },
+}
+```
+
+### Create a profile order
+
+<ApiEndpoint
+  method="POST"
+  path="/profile/orders"
+  summary="Create an order for the authenticated user."
+  badges={[{ kind: 'auth', icon: '🔒', label: 'Auth required' }]}
+/>
+
+<ApiCallout kind="warning" icon="🔒" title="Requires">
+
+- Authentication with the `write` scope.
+
+</ApiCallout>
+
+### Request
+
+The request body schema is not specified in the available contract.
+
+### Response
+
+The success response body schema is not specified.
+
+### Update a profile order
+
+<ApiEndpoint
+  method="PUT"
+  path="/profile/orders/{order_id}"
+  summary="Update an order belonging to the authenticated user."
+  badges={[{ kind: 'auth', icon: '🔒', label: 'Auth required' }]}
+/>
+
+<ApiCallout kind="warning" icon="🔒" title="Requires">
+
+- Authentication with the `write` scope.
+
+</ApiCallout>
+
+### Request
+
+#### URL Parameters
+
+| Name       | Type                                       | Description       |
+| ---------- | ------------------------------------------ | ----------------- |
+| `order_id` | <ApiBadge kind="neutral" label="string" /> | Order identifier. |
+
+The request body schema is not specified in the available contract.
+
+### Response
+
+The success response body schema is not specified.
+
+### Delete a profile order
+
+<ApiEndpoint
+  method="DELETE"
+  path="/profile/orders/{order_id}"
+  summary="Delete an order belonging to the authenticated user."
+  badges={[
+    { kind: 'auth', icon: '🔒', label: 'Auth required' },
+    { kind: 'danger', icon: '✕', label: 'Deletes data' },
+  ]}
+/>
+
+<ApiCallout kind="warning" icon="🔒" title="Requires">
+
+- Authentication with the `write` scope.
+
+</ApiCallout>
+
+### Request
+
+#### URL Parameters
+
+| Name       | Type                                       | Description       |
+| ---------- | ------------------------------------------ | ----------------- |
+| `order_id` | <ApiBadge kind="neutral" label="string" /> | Order identifier. |
+
+### Response
+
+The success response body schema is not specified.
+
+### Customize current profile
+
+<ApiEndpoint
+  method="POST"
+  path="/profile/customization"
+  summary="Update current profile customization."
+  badges={[{ kind: 'auth', icon: '🔒', label: 'Auth required' }]}
+/>
+
+<ApiCallout kind="warning" icon="🔒" title="Requires">
+
+- Authentication with the `write` scope.
+
+</ApiCallout>
+
+### Request
+
+The request body schema is not specified in the available contract.
+
+### Response
+
+The success response body schema is not specified.
