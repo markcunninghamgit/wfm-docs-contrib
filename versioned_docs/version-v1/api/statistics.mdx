@@ -1,0 +1,150 @@
+---
+sidebar_position: 4
+toc_min_heading_level: 2
+toc_max_heading_level: 2
+---
+
+import ApiEndpoint, { ApiBadge } from '@site/src/components/ApiEndpoint';
+
+# Statistics
+
+## Get item statistics
+
+<ApiEndpoint
+  method="GET"
+  path="/items/{url_name}/statistics"
+  summary="Get closed and live price statistics for an item."
+  badges={[
+    { kind: 'i18n', icon: '🌐', label: 'Language header' },
+    { kind: 'crossplay', icon: '🌀', label: 'Crossplay header' },
+  ]}
+/>
+
+### Request
+
+#### URL Parameters
+
+| Name       | Type                                       | Description    |
+| ---------- | ------------------------------------------ | -------------- |
+| `url_name` | <ApiBadge kind="neutral" label="string" /> | Item URL name. |
+
+#### Headers
+
+| Name        | Type                                       | Example |
+| ----------- | ------------------------------------------ | ------- |
+| `Language`  | <ApiBadge kind="i18n" label="string" />    | `en`    |
+| `Platform`  | <ApiBadge kind="neutral" label="string" /> | `pc`    |
+| `Crossplay` | <ApiBadge kind="crossplay" label="bool" /> | `true`  |
+
+### Response
+
+#### Body
+
+```json
+{
+  "payload": {
+    "statistics_closed": {
+      "48hours": [],
+      "90days": []
+    },
+    "statistics_live": {
+      "48hours": [],
+      "90days": []
+    }
+  }
+}
+```
+
+Each array contains statistic records. A record can contain the following fields, depending on the section and period:
+
+| Field          | Type                                       | Description                                       |
+| -------------- | ------------------------------------------ | ------------------------------------------------- |
+| `datetime`     | <ApiBadge kind="neutral" label="string" /> | Record timestamp.                                 |
+| `volume`       | <ApiBadge kind="neutral" label="number" /> | Number of orders represented.                     |
+| `min_price`    | <ApiBadge kind="neutral" label="number" /> | Minimum price.                                    |
+| `max_price`    | <ApiBadge kind="neutral" label="number" /> | Maximum price.                                    |
+| `open_price`   | <ApiBadge kind="neutral" label="number" /> | Opening price; closed statistics.                 |
+| `closed_price` | <ApiBadge kind="neutral" label="number" /> | Closing price; closed statistics.                 |
+| `avg_price`    | <ApiBadge kind="neutral" label="number" /> | Average price.                                    |
+| `wa_price`     | <ApiBadge kind="neutral" label="number" /> | Weighted-average price.                           |
+| `median`       | <ApiBadge kind="neutral" label="number" /> | Median price.                                     |
+| `moving_avg`   | <ApiBadge kind="neutral" label="number" /> | Moving average; available in some closed periods. |
+| `donch_top`    | <ApiBadge kind="neutral" label="number" /> | Donchian channel top; closed statistics.          |
+| `donch_bot`    | <ApiBadge kind="neutral" label="number" /> | Donchian channel bottom; closed statistics.       |
+| `order_type`   | <ApiBadge kind="neutral" label="string" /> | Order type; live statistics.                      |
+| `mod_rank`     | <ApiBadge kind="neutral" label="number" /> | Mod rank, when applicable.                        |
+| `id`           | <ApiBadge kind="neutral" label="string" /> | Record identifier.                                |
+
+## Get user sale statistics
+
+<ApiEndpoint
+  method="GET"
+  path="/profile/{user_name}/statistics"
+  summary="Get a user's closed-order statistics."
+/>
+
+### Request
+
+#### URL Parameters
+
+| Name        | Type                                       | Description    |
+| ----------- | ------------------------------------------ | -------------- |
+| `user_name` | <ApiBadge kind="neutral" label="string" /> | User URL name. |
+
+### Response
+
+#### Body
+
+```json
+{
+  "payload": {
+    "closed_orders": [
+      {
+        "id": "<order-id>",
+        "quantity": 1,
+        "platinum": 0,
+        "closed_date": "<date-time>",
+        "updated_at": "<date-time>",
+        "order_type": "<string>",
+        "mod_rank": 0,
+        "subtype": "<string>",
+        "item": {
+          "id": "<item-id>",
+          "url_name": "<item-url-name>"
+        }
+      }
+    ]
+  }
+}
+```
+
+#### Data Fields
+
+| Field                         | Type                                        | Description                     |
+| ----------------------------- | ------------------------------------------- | ------------------------------- |
+| `payload.closed_orders`       | <ApiBadge kind="neutral" label="Order[]" /> | Closed orders for the user.     |
+| `closed_orders[].id`          | <ApiBadge kind="neutral" label="string" />  | Order identifier.               |
+| `closed_orders[].quantity`    | <ApiBadge kind="neutral" label="number" />  | Order quantity.                 |
+| `closed_orders[].platinum`    | <ApiBadge kind="neutral" label="number" />  | Order price in platinum.        |
+| `closed_orders[].closed_date` | <ApiBadge kind="neutral" label="string" />  | Order close timestamp.          |
+| `closed_orders[].updated_at`  | <ApiBadge kind="neutral" label="string" />  | Last update timestamp.          |
+| `closed_orders[].order_type`  | <ApiBadge kind="neutral" label="string" />  | Order type.                     |
+| `closed_orders[].mod_rank`    | <ApiBadge kind="neutral" label="number" />  | Mod rank, when applicable.      |
+| `closed_orders[].subtype`     | <ApiBadge kind="neutral" label="string" />  | Order subtype, when present.    |
+| `closed_orders[].item`        | <ApiBadge kind="neutral" label="object" />  | Item associated with the order. |
+
+## Get global statistics
+
+<ApiEndpoint method="GET" path="/statistics" summary="Get global market statistics." />
+
+### Request
+
+No parameters, headers, or request body are required.
+
+### Response
+
+#### Body
+
+```json
+{}
+```
