@@ -4,6 +4,9 @@ import type * as Preset from '@docusaurus/preset-classic';
 
 // This runs in Node.js - Don't use client-side code here (browser APIs, JSX...)
 
+const baseUrl = process.env.DOCUSAURUS_BASE_URL || '/';
+const siteUrl = process.env.DOCUSAURUS_URL || 'https://docs.warframe.market';
+
 const config: Config = {
   title: 'Warframe.market Docs',
   tagline: 'Public API, OAuth, WebSocket, and rules documentation',
@@ -14,7 +17,7 @@ const config: Config = {
       attributes: {
         rel: 'apple-touch-icon',
         sizes: '180x180',
-        href: '/apple-touch-icon.png',
+        href: `${baseUrl}apple-touch-icon.png`,
       },
     },
     {
@@ -23,7 +26,7 @@ const config: Config = {
         rel: 'icon',
         type: 'image/png',
         sizes: '32x32',
-        href: '/favicon-32x32.png',
+        href: `${baseUrl}favicon-32x32.png`,
       },
     },
     {
@@ -32,14 +35,14 @@ const config: Config = {
         rel: 'icon',
         type: 'image/png',
         sizes: '16x16',
-        href: '/favicon-16x16.png',
+        href: `${baseUrl}favicon-16x16.png`,
       },
     },
     {
       tagName: 'link',
       attributes: {
         rel: 'mask-icon',
-        href: '/safari-pinned-tab.svg',
+        href: `${baseUrl}safari-pinned-tab.svg`,
         color: '#19a187',
       },
     },
@@ -47,7 +50,7 @@ const config: Config = {
       tagName: 'meta',
       attributes: {
         name: 'msapplication-config',
-        content: '/browserconfig.xml',
+        content: `${baseUrl}browserconfig.xml`,
       },
     },
     {
@@ -65,10 +68,10 @@ const config: Config = {
   },
 
   // Set the production url of your site here
-  url: 'https://docs.warframe.market',
+  url: siteUrl,
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: '/',
+  baseUrl,
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
