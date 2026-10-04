@@ -1,0 +1,172 @@
+---
+sidebar_position: 2
+toc_min_heading_level: 2
+toc_max_heading_level: 2
+---
+
+import ApiEndpoint, { ApiBadge } from '@site/src/components/ApiEndpoint';
+
+# Authentication
+
+V1 sign-in authenticates an account and returns a `JWT` cookie. The token can be sent as a bearer token to authenticated v2 endpoints, including `GET /v2/me`.
+
+## Sign in
+
+<ApiEndpoint
+  method="POST"
+  path="/auth/signin"
+  summary="Sign in and receive a JWT session cookie."
+/>
+
+### Request
+
+#### Headers
+
+| Name            | Type                                       | Value              |
+| --------------- | ------------------------------------------ | ------------------ |
+| `Authorization` | <ApiBadge kind="auth" label="string" />    | `JWT`              |
+| `Content-Type`  | <ApiBadge kind="neutral" label="string" /> | `application/json` |
+
+#### Body
+
+```json
+{
+  "email": "<email>",
+  "password": "<password>",
+  "device_id": "<device-id>"
+}
+```
+
+#### Body Fields
+
+| Field       | Type                                       | Description                                            |
+| ----------- | ------------------------------------------ | ------------------------------------------------------ |
+| `email`     | <ApiBadge kind="neutral" label="string" /> | Account email address.                                 |
+| `password`  | <ApiBadge kind="neutral" label="string" /> | Account password.                                      |
+| `device_id` | <ApiBadge kind="neutral" label="string" /> | Client device identifier. Requiredness is unspecified. |
+
+#### Example
+
+```http
+POST /v1/auth/signin
+Authorization: JWT
+Content-Type: application/json
+
+{"email":"<email>","password":"<password>","device_id":"<device-id>"}
+```
+
+Browser `fetch` does not expose the `Set-Cookie` response header to JavaScript. Use a server-side client to read the token from this header.
+
+### Response
+
+The successful response includes a `Set-Cookie` header containing the `JWT` session token and a JSON body with `payload.user`:
+
+```json
+{
+  "payload": {
+    "user": {
+      "id": "<user-id>",
+      "slug": "<user-name>",
+      "platform": "<string>",
+      "region": "<string>",
+      "locale": "<string>",
+      "role": "<string>",
+      "reputation": 0,
+      "unread_messages": 0,
+      "check_code": "<string>",
+      "banned": false,
+      "verification": false,
+      "anonymous": false,
+      "linked_accounts": {
+        "steam_profile": false,
+        "patreon_profile": false,
+        "xbox_profile": false,
+        "discord_profile": false,
+        "github_profile": false
+      },
+      "ingame_name": "<string>",
+      "avatar": null,
+      "background": null,
+      "has_mail": false,
+      "crossplay": false,
+      "written_reviews": 0
+    }
+  }
+}
+```
+
+The response also sets a `JWT` cookie. Token expiry and an error response schema are unspecified.
+
+#### Response Fields
+
+| Field                          | Type                                               | Description                        |
+| ------------------------------ | -------------------------------------------------- | ---------------------------------- |
+| `payload.user.id`              | <ApiBadge kind="neutral" label="string" />         | User identifier.                   |
+| `payload.user.slug`            | <ApiBadge kind="neutral" label="string" />         | User URL name.                     |
+| `payload.user.platform`        | <ApiBadge kind="neutral" label="string" />         | Platform.                          |
+| `payload.user.region`          | <ApiBadge kind="neutral" label="string" />         | Region.                            |
+| `payload.user.locale`          | <ApiBadge kind="neutral" label="string" />         | Locale.                            |
+| `payload.user.role`            | <ApiBadge kind="neutral" label="string" />         | Account role.                      |
+| `payload.user.reputation`      | <ApiBadge kind="neutral" label="number" />         | Reputation score.                  |
+| `payload.user.unread_messages` | <ApiBadge kind="neutral" label="number" />         | Unread message count.              |
+| `payload.user.check_code`      | <ApiBadge kind="neutral" label="string" />         | Account verification code.         |
+| `payload.user.banned`          | <ApiBadge kind="neutral" label="bool" />           | Whether the account is banned.     |
+| `payload.user.verification`    | <ApiBadge kind="neutral" label="bool" />           | Whether the account is verified.   |
+| `payload.user.anonymous`       | <ApiBadge kind="neutral" label="bool" />           | Whether the account is anonymous.  |
+| `payload.user.linked_accounts` | <ApiBadge kind="neutral" label="object" />         | Linked-account availability flags. |
+| `payload.user.ingame_name`     | <ApiBadge kind="neutral" label="string" />         | In-game name.                      |
+| `payload.user.avatar`          | <ApiBadge kind="neutral" label="string or null" /> | Avatar URL, when present.          |
+| `payload.user.background`      | <ApiBadge kind="neutral" label="string or null" /> | Background URL, when present.      |
+| `payload.user.has_mail`        | <ApiBadge kind="neutral" label="bool" />           | Whether the user has mail.         |
+| `payload.user.crossplay`       | <ApiBadge kind="neutral" label="bool" />           | Whether crossplay is enabled.      |
+| `payload.user.written_reviews` | <ApiBadge kind="neutral" label="number" />         | Number of written reviews.         |
+
+## Use the token with v2
+
+Send the extracted token as a bearer token on authenticated requests:
+
+```http
+Authorization: Bearer <token>
+Content-Type: application/json
+```
+
+The v1-issued bearer token is accepted by authenticated v2 endpoints. Other authenticated v2 operations may have operation-specific requirements.
+
+## Sign out
+
+<ApiEndpoint method="GET" path="/auth/signout" summary="End the current v1 session." />
+
+Send the session token as the `JWT` cookie. The request has no body.
+
+### Request
+
+```js
+const response = await fetch('https://api.warframe.market/v1/auth/signout', {
+  method: 'GET',
+  headers: {
+    Accept: 'application/json',
+    Cookie: `JWT=${token}`,
+    'Content-Type': 'application/json',
+    Language: 'en',
+    Platform: 'pc',
+  },
+});
+```
+
+### Response
+
+The endpoint returns HTTP `200`, a JSON `payload.user`, and a replacement `JWT` cookie representing an anonymous session. The replacement token is not accepted by v2 `GET /v2/me`.
+
+The original sign-in token may remain accepted by v2 `GET /v2/me` after sign-out. Sign-out replaces the browser cookie but does not guarantee revocation of a previously issued bearer token for v2.
+
+## Registration
+
+<ApiEndpoint method="POST" path="/auth/registration" summary="Register an account." />
+
+### Request
+
+The request body schema is not specified in the available contract.
+
+### Response
+
+The success response schema is not specified.
