@@ -100,12 +100,33 @@ const config: Config = {
         docs: {
           sidebarPath: './sidebars.ts',
           routeBasePath: 'docs',
+          disableVersioning: false,
+          lastVersion: 'current',
+          versions: {
+            current: { label: 'v2' },
+            v1: { label: 'v1', banner: 'unmaintained' },
+          },
         },
         blog: false,
         theme: {
           customCss: './src/css/custom.css',
         },
       } satisfies Preset.Options,
+    ],
+  ],
+
+  plugins: [
+    [
+      '@docusaurus/plugin-client-redirects',
+      {
+        createRedirects(existingPath: string) {
+          if (existingPath.startsWith('/docs/') && !existingPath.startsWith('/docs/v1/')) {
+            return existingPath.replace(/^\/docs\//, '/docs/v2/');
+          }
+
+          return undefined;
+        },
+      },
     ],
   ],
 
@@ -144,6 +165,10 @@ const config: Config = {
           sidebarId: 'docsSidebar',
           position: 'left',
           label: 'Docs',
+        },
+        {
+          type: 'docsVersionDropdown',
+          position: 'left',
         },
         {
           href: 'https://warframe.market',
